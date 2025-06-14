@@ -6,16 +6,21 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  await requireAuth(req, res, async () => {
+  await requireAuth(req, res, async (user) => {
     // Parse GMID from query
     const { gmid } = req.query;
-    if (!gmid) {
-      return res.status(400).json({ success: false, msg: 'gmid is required' });
+    if (!gmid || Array.isArray(gmid)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: 'A valid gmid is required' });
     }
 
-    // Call RapidAPI endpoint (example, adapt as needed)
     const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY as string;
+    if (!RAPIDAPI_KEY) {
+      return res.status(500).json({ success: false, msg: 'Missing API key' });
+    }
 
+    // Call RapidAPI stream source endpoint
     const apiRes = await fetch(
       `https://all-sport-live-stream.p.rapidapi.com/api/d/stream_source?gmid=${gmid}`,
       {
@@ -25,15 +30,17 @@ export default async function handler(
         },
       }
     );
+
     const data = await apiRes.json();
 
+    // Save match view
     await MatchView.create({
-      userId: (req as any).user.userId,
+      userId: user.userId,
       gmid,
       viewedAt: new Date(),
     });
 
-    // Forward the response
+    // Forward API response
     return res.status(apiRes.status).json(data);
   });
 }
