@@ -168,7 +168,6 @@ export default function LiveStream({
   const [isEmbed, setIsEmbed] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [rewrittenUrl, setRewrittenUrl] = useState<string | null>(null);
 
   // Determine embed vs HLS
   useEffect(() => {
@@ -222,7 +221,6 @@ export default function LiveStream({
           video.src = blobUrl;
         }
 
-        setRewrittenUrl(blobUrl);
       } catch (err) {
         console.error('HLS init error', err);
       }
