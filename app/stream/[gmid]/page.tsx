@@ -18,7 +18,7 @@ interface MatchData {
 export default function StreamPage() {
   const params = useParams();
   const gmid = params?.gmid as string | undefined;
-    const router = useRouter();
+  const router = useRouter();
   const { user, loading: authLoading } = useUser();
 
   const [matches, setMatches] = useState<MatchData[]>([]);

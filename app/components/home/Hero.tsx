@@ -4,6 +4,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Hero() {
+  const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY as string;
+  if (!RAPIDAPI_KEY) {
+    console.error('RAPIDAPI_KEY is not defined in environment variables');
+    return null; // or handle the error appropriately
+  }
   return (
     <section className="relative h-screen w-full">
       {/* Background Image */}
