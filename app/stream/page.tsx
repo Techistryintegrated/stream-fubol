@@ -1,5 +1,3 @@
-// app/stream/page.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,33 +7,56 @@ import FootballLoader from '../components/shared/Footballloader';
 import LiveStream from '../components/stream/LiveStream';
 import UpcomingMatches from '../components/home/UpcomingMatches';
 
+// Define the match type
+interface MatchData {
+  gmid: number;
+  league: string;
+  leagueLogo: string;
+  time: string; // ISO string
+  teamA: string;
+  teamB: string;
+  logoA: string;
+  logoB: string;
+  stime: string;
+  iplay: boolean;
+  status: string;
+}
+
 export default function StreamPage() {
   const { user, loading: authLoading } = useUser();
   const router = useRouter();
 
-  const [matches, setMatches] = useState<any[]>([]);
-  const [selected, setSelected] = useState<any>(null);
+  const [matches, setMatches] = useState<MatchData[]>([]);
+  const [selected, setSelected] = useState<MatchData | null>(null);
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [loadingStream, setLoadingStream] = useState(false);
 
-  // 1) Fetch live matches on mount
+  // Fetch live matches on mount
   useEffect(() => {
-    fetch('/api/stream/match_list?sportId=1')
-      .then((res) => res.json())
-      .then(({ matches }) => {
+    async function fetchMatches() {
+      try {
+        const res = await fetch('/api/stream/match_list?sportId=1');
+        const { matches } = await res.json();
         setMatches(matches);
-        if (matches.length > 0) setSelected(matches[0]);
-      });
+        if (matches.length > 0) {
+          setSelected(matches[0]);
+        }
+      } catch (err) {
+        console.error('Failed to load matches', err);
+        setMatches([]);
+      }
+    }
+    fetchMatches();
   }, []);
 
-  // 2) Redirect if not authenticated
+  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       router.replace(`/login?redirect=/stream`);
     }
   }, [authLoading, user, router]);
 
-  // 3) Fetch stream URL whenever a match is selected (and user is present)
+  // Fetch stream URL when match is selected
   useEffect(() => {
     if (!selected || !user) return;
     setLoadingStream(true);
@@ -44,17 +65,17 @@ export default function StreamPage() {
     })
       .then((res) => res.json())
       .then(({ stream_url }) => setStreamUrl(stream_url))
+      .catch(() => setStreamUrl(null))
       .finally(() => setLoadingStream(false));
   }, [selected, user]);
 
-  // 4) While auth or stream is loading, show a loader
   if (authLoading || loadingStream) {
     return <FootballLoader />;
   }
 
   return (
     <div className="w-full flex lg:justify-center bg-black text-white py-10 px-2 lg:px-4 pt-[158px]">
-      {/* Left Sidebar (match list) */}
+      {/* Left Sidebar */}
       <div className="hidden lg:block lg:w-1/4 pr-4">
         <div className="mb-4">
           <input
@@ -71,7 +92,7 @@ export default function StreamPage() {
             }}
           />
         </div>
-        <div className="space-y-2  overflow-y-auto">
+        <div className="space-y-2 overflow-y-auto max-h-[70vh]">
           {matches.map((m) => (
             <div
               key={m.gmid}
@@ -82,7 +103,12 @@ export default function StreamPage() {
                   : 'hover:bg-[#1a1a1a]'
               }`}
             >
-              <div className="text-sm text-gray-400">{new Date(m.time).toLocaleTimeString()}</div>
+              <div className="text-sm text-gray-400">
+                {new Date(m.time).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </div>
               <div className="font-medium">
                 {m.teamA} vs {m.teamB}
               </div>
@@ -91,14 +117,14 @@ export default function StreamPage() {
         </div>
       </div>
 
-      {/* Right Pane (player + upcoming) */}
+      {/* Right: player + upcoming */}
       <div className="lg:w-3/4 flex flex-col gap-6">
         <div className="w-full bg-black rounded-lg overflow-hidden">
           {streamUrl ? (
             <LiveStream
               src={streamUrl}
-              matchTitle={`${selected.teamA} vs ${selected.teamB}`}
-              timeRange={selected.time}
+              matchTitle={`${selected?.teamA} vs ${selected?.teamB}`}
+              timeRange={selected?.time || ''}
             />
           ) : (
             <div className="text-center text-gray-400 py-20">
@@ -107,7 +133,6 @@ export default function StreamPage() {
           )}
         </div>
 
-        {/* Upcoming matches component */}
         <UpcomingMatches />
       </div>
     </div>
