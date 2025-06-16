@@ -3,8 +3,24 @@ import MatchSearchBar from '../shared/MatchSearchBar';
 import LeagueFilter from '../shared/LeagueFilter';
 import { LeagueSection } from './LeagueSection';
 
+interface MatchData {
+  gmid: number;
+  league: string;
+  leagueLogo: string;
+  time: string;
+  teamA: string;
+  teamB: string;
+  logoA: string;
+  logoB: string;
+  stime: string;
+  iplay: boolean;
+  status: string;
+}
+
 export default function LiveMatches() {
-  const [matchesByLeague, setMatchesByLeague] = useState<any[]>([]);
+  const [matchesByLeague, setMatchesByLeague] = useState<
+    { league: string; matches: MatchData[] }[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,12 +29,16 @@ export default function LiveMatches() {
       const res = await fetch('/api/stream/match_list?sportId=1');
       const { matches } = await res.json();
 
-      // Group matches by league for display
-      const grouped: Record<string, any[]> = {};
-      matches.forEach((match: any) => {
-        if (!grouped[match.league]) grouped[match.league] = [];
-        grouped[match.league].push(match);
+      const grouped: Record<string, MatchData[]> = {};
+      matches.forEach((match: MatchData) => {
+        const safeMatch = {
+          ...match,
+          time: match.time ?? '',
+        };
+        if (!grouped[safeMatch.league]) grouped[safeMatch.league] = [];
+        grouped[safeMatch.league].push(safeMatch);
       });
+
       setMatchesByLeague(
         Object.entries(grouped).map(([league, matches]) => ({
           league,
@@ -32,13 +52,11 @@ export default function LiveMatches() {
 
   return (
     <div className="bg-black min-h-screen px-4 pt-6 flex flex-col md:flex-row gap-6">
-      {/* Left Ad */}
       <div className="hidden lg:block w-20 text-white bg-white text-center text-sm">
         AD
         <br />
         Space
       </div>
-      {/* Main Content */}
       <div className="flex-1 max-w-5xl">
         <div className="border-b border-gray-700 pb-4">
           <MatchSearchBar />
@@ -61,7 +79,6 @@ export default function LiveMatches() {
           </div>
         </div>
       </div>
-      {/* Right Ad */}
       <div className="hidden lg:block w-20 text-white bg-white text-center text-sm">
         AD
         <br />
