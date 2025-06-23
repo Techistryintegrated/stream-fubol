@@ -4,10 +4,13 @@ import { requireAuth } from '@/middleware/auth';
 import { requireAdmin } from '@/middleware/admin';
 import { User } from '@/models/User';
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+function extractIdFromUrl(req: NextRequest): string | null {
+  const parts = req.nextUrl.pathname.split('/');
+  const id = parts[parts.indexOf('user') + 1];
+  return id || null;
+}
+
+export async function DELETE(req: NextRequest) {
   try {
     const authResult = await requireAuth(req);
     if (authResult.errorResponse) {
@@ -21,9 +24,15 @@ export async function DELETE(
 
     await connectToDatabase();
 
-    const { id } = params;
-    const user = await User.findByIdAndDelete(id);
+    const id = extractIdFromUrl(req);
+    if (!id) {
+      return NextResponse.json(
+        { success: false, msg: 'Missing user ID' },
+        { status: 400 }
+      );
+    }
 
+    const user = await User.findByIdAndDelete(id);
     if (!user) {
       return NextResponse.json(
         { success: false, msg: 'User not found' },
@@ -41,10 +50,7 @@ export async function DELETE(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest) {
   try {
     const authResult = await requireAuth(req);
     if (authResult.errorResponse) {
@@ -58,7 +64,14 @@ export async function POST(
 
     await connectToDatabase();
 
-    const { id } = params;
+    const id = extractIdFromUrl(req);
+    if (!id) {
+      return NextResponse.json(
+        { success: false, msg: 'Missing user ID' },
+        { status: 400 }
+      );
+    }
+
     const body = await req.json();
     const { role } = body;
 
