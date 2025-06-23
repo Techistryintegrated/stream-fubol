@@ -28,6 +28,7 @@ export function LeagueSection({ league, matches, type }: LeagueSectionProps) {
       <p className="text-sm font-normal text-[#FFFFFFB2]">
         {matches.length} game
       </p>
+
       <div className="mt-5">
         {matches.map((m) =>
           type === 'live' ? (
@@ -38,6 +39,7 @@ export function LeagueSection({ league, matches, type }: LeagueSectionProps) {
               teamB={m.teamB}
               logoA={m.logoA}
               logoB={m.logoB}
+              gmid={m.gmid}
             />
           ) : (
             <MatchCard

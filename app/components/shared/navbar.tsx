@@ -45,12 +45,12 @@ console.log(user?.email, 'user email in navbar');
           >
             Upcoming
           </Link>
-          <Link
+          {/* <Link
             href="#info"
             className="hidden md:inline hover:text-gray-300 transition capitalize"
           >
             Info
-          </Link>
+          </Link> */}
         </div>
 
         {/* CTA Button */}

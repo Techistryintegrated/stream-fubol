@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { useUser } from '../../../context/UserContext';
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -18,6 +19,8 @@ export default function SignInForm() {
   const params = useSearchParams();
   const redirect = params?.get('redirect') ?? '/';
   const [show, setShow] = useState(false);
+  const { refreshUser } = useUser();
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4">
@@ -51,6 +54,7 @@ export default function SignInForm() {
               const json = await res.json();
               if (!res.ok) throw new Error(json.msg || 'Login failed');
               toast.success('Logged in successfully');
+              await refreshUser();
               setTimeout(() => router.push(redirect), 800);
             } catch (err: unknown) {
               const errorMsg =

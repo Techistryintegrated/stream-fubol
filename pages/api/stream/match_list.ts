@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { convertISTtoWAT } from '../../../utils/timezone';
 import { DateTime } from 'luxon';
+import { getAllBadges } from '../../../utils/getTeamBadge';
 
 export interface MatchApiType {
   gmid: number;
@@ -9,7 +10,7 @@ export interface MatchApiType {
   cid: number;
   cname: string;
   iplay: boolean;
-  stime: string; // Original format: "6/16/2025 3:30:00 AM"
+  stime: string;
   tv: boolean;
   bm: boolean;
   f: boolean;
@@ -17,12 +18,12 @@ export interface MatchApiType {
   iscc: number;
   mid: number;
   mname: string;
-  status: string; // e.g. "OPEN", "SUSPENDED"
+  status: string;
   rc: number;
   gscode: number;
   m: number;
   oid: number;
-  gtype: string; // e.g. "match"
+  gtype: string;
 }
 
 interface MatchData {
@@ -30,13 +31,19 @@ interface MatchData {
   league: string;
   leagueLogo: string;
   time: string | null;
+  stime: string | null;
   teamA: string;
   teamB: string;
   logoA: string;
   logoB: string;
-  stime: string | null;
   iplay: boolean;
   status: string;
+}
+
+interface ApiResponseData {
+  data?: {
+    t1?: MatchApiType[];
+  };
 }
 
 export default async function handler(
@@ -50,58 +57,73 @@ export default async function handler(
     return res.status(400).json({ success: false, msg: 'sportId is required' });
   }
 
-  const apiRes = await fetch(
-    `https://all-sport-live-stream.p.rapidapi.com/api/d/match_list?sportId=${sportId}`,
-    {
-      headers: {
-        'x-rapidapi-host': 'all-sport-live-stream.p.rapidapi.com',
-        'x-rapidapi-key': RAPIDAPI_KEY,
-      },
-    }
-  );
-  const data = await apiRes.json();
-
-
-  let cleanedMatches: MatchData[] = [];
-
-  if (data.data?.t1) {
-    cleanedMatches = data.data.t1.map((match: MatchApiType) => {
-      const convertedTime = match.stime ? convertISTtoWAT(match.stime) : null;
-      let [teamA, teamB] = ['', ''];
-      if (match.ename) {
-        [teamA, teamB] = match.ename.split(/\s[v\-]\s/) || ['', ''];
+  try {
+    const apiRes = await fetch(
+      `https://all-sport-live-stream.p.rapidapi.com/api/d/match_list?sportId=${sportId}`,
+      {
+        headers: {
+          'x-rapidapi-host': 'all-sport-live-stream.p.rapidapi.com',
+          'x-rapidapi-key': RAPIDAPI_KEY,
+        },
       }
+    );
 
+    const data: ApiResponseData = await apiRes.json();
+
+    if (!data.data?.t1) {
+      return res.status(200).json({ success: true, matches: [] });
+    }
+
+    const cleanedMatches: MatchData[] = data.data.t1.map((match) => {
+      const convertedTime = match.stime ? convertISTtoWAT(match.stime) : null;
+      const [teamA = '', teamB = ''] = match.ename
+        ? match.ename.split(/\s[vV][sS]?\s| - /)
+        : ['', ''];
 
       return {
         gmid: match.gmid,
         league: match.cname,
         leagueLogo: '/leagues/default.png',
         time: convertedTime,
+        stime: convertedTime,
         teamA,
         teamB,
-        logoA: '/teams/default.png',
-        logoB: '/teams/default.png',
-        stime: convertedTime,
+        logoA: '',
+        logoB: '',
         iplay: match.iplay,
         status: match.status,
       };
     });
-  }
 
-
-  let filteredMatches = cleanedMatches.filter(
-    (match) =>
-      match.status !== 'SUSPENDED' &&
-      (type === 'upcoming' ? match.iplay === false : match.iplay === true)
-  );
-
-  if (type === 'upcoming' && date) {
-    filteredMatches = filteredMatches.filter(
-      (match) =>
-        match.stime && DateTime.fromISO(match.stime).toISODate() === date
+    let filtered = cleanedMatches.filter(
+      (m) =>
+        m.status !== 'SUSPENDED' &&
+        (type === 'upcoming' ? m.iplay === false : m.iplay === true)
     );
-  }
 
-  return res.status(200).json({ success: true, matches: filteredMatches });
+    if (type === 'upcoming' && date) {
+      filtered = filtered.filter(
+        (m) => m.stime && DateTime.fromISO(m.stime).toISODate() === date
+      );
+    }
+
+    const teamSet = new Set<string>();
+    filtered.forEach((m) => {
+      if (m.teamA) teamSet.add(m.teamA);
+      if (m.teamB) teamSet.add(m.teamB);
+    });
+
+    const badges = await getAllBadges(Array.from(teamSet));
+
+    const finalMatches = filtered.map((m) => ({
+      ...m,
+      logoA: badges[m.teamA] || '/soccerball.svg',
+      logoB: badges[m.teamB] || '/soccerball.svg',
+    }));
+
+    return res.status(200).json({ success: true, matches: finalMatches });
+  } catch (err: unknown) {
+    console.error('Error fetching match list:', (err as Error).message);
+    return res.status(500).json({ success: false, msg: 'Server error' });
+  }
 }

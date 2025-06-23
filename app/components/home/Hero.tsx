@@ -4,11 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Hero() {
-  const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY as string;
-  if (!RAPIDAPI_KEY) {
-    console.error('RAPIDAPI_KEY is not defined in environment variables');
-    return null; // or handle the error appropriately
-  }
+
   return (
     <section className="relative h-screen w-full">
       {/* Background Image */}
@@ -29,10 +25,10 @@ export default function Hero() {
           Watch Live Football Instantly
         </h1>
         <p className="text-lg md:text-xl font-semibold mb-10 text-[#FFFFFFB2] tracking-[-0.32px] ">
-          No sign-up. No hassle. Just the match.
+        No hassle. Just the match.   
         </p>
         <Link
-          href="/watch"
+          href="/stream"
           className="bg-[#099137] border border-[#E7F6EC] text-white px-[17px] py-[11px] rounded-[12px] text-base font-medium hover:bg-green-700 transition"
         >
           Watch For Free
