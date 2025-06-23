@@ -34,7 +34,7 @@ export default function SignupPage() {
         <div className="text-center">
           <Image
             src="/stream-fubol logo.svg"
-            alt="StreamFutbol"
+            alt="Streamfutball"
             width={178}
             height={20}
             className="mx-auto"
@@ -44,7 +44,7 @@ export default function SignupPage() {
             Create your account
           </h1>
           <p className="text-gray-400">
-            Create a new StreamFutbol admin account
+            Create a new Streamfutball admin account
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function SignupPage() {
               <div className="text-center space-y-2">
                 <h3 className="text-base text-[#FAFAFA] ">Sign Up</h3>
                 <p className="text-[13px] text-[##A1A1A1] ">
-                  Create a new StreamFutbol account
+                  Create a new Streamfutball account
                 </p>
               </div>
               {/* First & Last Name */}

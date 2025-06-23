@@ -1,14 +1,32 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
+import { connectToDatabase } from '@/utils/db';
+import { User } from '@/models/User';
+import { AuthenticatedUser } from './auth';
 
 export async function requireAdmin(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  next: () => Promise<void>
-) {
-  // Assumes user info already attached by requireAuth
-  if ((req as any).user?.role === 'admin') {
-    await next();
-  } else {
-    return res.status(403).json({ success: false, msg: 'Admin only' });
+  user: AuthenticatedUser
+): Promise<{ errorResponse: NextResponse | null }> {
+  try {
+    await connectToDatabase();
+
+    const dbUser = await User.findById(user.userId);
+    if (!dbUser || dbUser.role !== 'admin') {
+      return {
+        errorResponse: NextResponse.json(
+          { success: false, msg: 'Forbidden: Admin only' },
+          { status: 403 }
+        ),
+      };
+    }
+
+    return { errorResponse: null };
+  } catch (err) {
+    console.error('Admin check error:', (err as Error).message);
+    return {
+      errorResponse: NextResponse.json(
+        { success: false, msg: 'Server error checking admin' },
+        { status: 500 }
+      ),
+    };
   }
 }

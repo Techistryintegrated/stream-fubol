@@ -21,7 +21,6 @@ export default function SignInForm() {
   const [show, setShow] = useState(false);
   const { refreshUser } = useUser();
 
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4">
       <div className="max-w-md w-full space-y-6">
@@ -29,14 +28,16 @@ export default function SignInForm() {
         <div className="text-center">
           <Image
             src="/stream-fubol logo.svg"
-            alt="StreamFutbol"
+            alt="Streamfutball"
             width={178}
             height={20}
             className="mx-auto"
           />
 
           <h1 className="mt-10 text-white text-2xl font-bold">Welcome back</h1>
-          <p className="text-[#A1A1A1]">Sign in to your StreamFutbol account</p>
+          <p className="text-[#A1A1A1]">
+            Sign in to your Streamfutball account
+          </p>
         </div>
 
         {/* Formik Form */}
@@ -45,7 +46,7 @@ export default function SignInForm() {
           validationSchema={LoginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const res = await fetch('/api/auth/login', {
+              const res = await fetch('/api/auth/login/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include', // <— include cookie

@@ -12,32 +12,32 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'StreamFutbol - Watch Live Football Matches',
+  title: 'Streamfutball - Watch Live Football Matches',
   description:
-    'StreamFutbol lets you watch live football matches from around the world. No account required. Just stream and enjoy.',
+    'Streamfutball lets you watch live football matches from around the world. No account required. Just stream and enjoy.',
   keywords: [
     'football streaming',
     'live sports',
     'watch football online',
-    'StreamFutbol',
+    'Streamfutball',
     'free football stream',
     'live football',
     'sports app',
   ],
-  authors: [{ name: 'Marvellous Ibironke', url: 'https://streamfutbol.com' }],
+  authors: [{ name: 'Marvellous Ibironke', url: 'https://Streamfutball.com' }],
   creator: 'Techistry Integrated',
   openGraph: {
-    title: 'StreamFutbol - Watch Live Football Matches',
+    title: 'Streamfutball - Watch Live Football Matches',
     description:
       'Catch live football games without signing up. Free, fast, and accessible on all devices.',
-    url: 'https://streamfutbol.com',
-    siteName: 'StreamFutbol',
+    url: 'https://Streamfutball.com',
+    siteName: 'Streamfutball',
     images: [
       {
-        url: 'https://streamfutbol.com/og-image.jpg',
+        url: 'https://Streamfutball.com/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'StreamFutbol - Watch Live Football',
+        alt: 'Streamfutball - Watch Live Football',
       },
     ],
     locale: 'en_NG',
@@ -45,13 +45,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'StreamFutbol - Watch Live Football',
+    title: 'Streamfutball - Watch Live Football',
     description:
       'Watch football matches live and free. Powered by licensed sources.',
-    images: ['https://streamfutbol.com/twitter-image.jpg'],
-    creator: '@streamfutbol',
+    images: ['https://Streamfutball.com/twitter-image.jpg'],
+    creator: '@Streamfutball',
   },
-  metadataBase: new URL('https://streamfutbol.com'),
+  metadataBase: new URL('https://Streamfutball.com'),
   themeColor: '#0d1117',
   viewport: 'width=device-width, initial-scale=1.0',
 };

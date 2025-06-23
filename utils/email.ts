@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 
 export async function sendEmail(to: string, subject: string, html: string) {
   await transporter.sendMail({
-    from: `"StreamFutbol" <${process.env.SMTP_FROM}>`,
+    from: `"Streamfutball" <${process.env.SMTP_FROM}>`,
     to,
     subject,
     html,

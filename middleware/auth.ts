@@ -1,40 +1,47 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { parse } from 'cookie';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not set in environment variables');
+}
 
 export interface AuthenticatedUser {
   userId: string;
 }
 
-export async function requireAuth(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  next: (user: AuthenticatedUser) => Promise<void>
-) {
+export async function requireAuth(req: NextRequest): Promise<{
+  user: AuthenticatedUser | null;
+  errorResponse: NextResponse | null;
+}> {
   try {
-    const cookieHeader = req.headers.cookie;
-    if (!cookieHeader) {
-      return res.status(401).json({ success: false, msg: 'No auth cookie' });
-    }
+    const token = req.cookies.get('token')?.value;
 
-    const { token } = parse(cookieHeader);
     if (!token) {
-      return res.status(401).json({ success: false, msg: 'No token cookie' });
+      return {
+        user: null,
+        errorResponse: NextResponse.json(
+          { success: false, msg: 'Unauthorized: No token' },
+          { status: 401 }
+        ),
+      };
     }
 
-    const payload = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
+    const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
 
-    if (!payload || !payload.userId) {
-      return res.status(401).json({ success: false, msg: 'Invalid token' });
-    }
-
-    // Pass user to next
-    await next(payload);
-  
-  }catch {
-    return res.status(401).json({ success: false, msg: 'Not authenticated' });
+    return {
+      user: decoded,
+      errorResponse: null,
+    };
+  } catch (err) {
+    console.error('Auth error:', (err as Error).message);
+    return {
+      user: null,
+      errorResponse: NextResponse.json(
+        { success: false, msg: 'Unauthorized: Invalid token' },
+        { status: 401 }
+      ),
+    };
   }
-  
 }
