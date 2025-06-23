@@ -6,7 +6,7 @@ import { useUser } from '../../../context/UserContext';
 import FootballLoader from '../../components/shared/Footballloader';
 import LiveStream from '../../components/stream/LiveStream';
 import UpcomingMatches from '../../components/home/UpcomingMatches';
-import { StreamContext } from '../layout';
+import { StreamContext } from '../StreamContext';
 
 export default function StreamPage() {
   const { matches } = useContext(StreamContext);

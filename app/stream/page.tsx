@@ -4,7 +4,7 @@ import { useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '../../context/UserContext';
 import FootballLoader from '../components/shared/Footballloader';
-import { StreamContext } from './layout';
+import { StreamContext } from './StreamContext';
 
 export default function StreamLandingPage() {
   const { matches } = useContext(StreamContext);

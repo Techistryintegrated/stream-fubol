@@ -1,21 +1,7 @@
 'use client';
 
-import { useEffect, useState, createContext, ReactNode } from 'react';
-
-interface MatchData {
-  gmid: number;
-  teamA: string;
-  teamB: string;
-  time: string;
-}
-
-interface StreamContextType {
-  matches: MatchData[];
-}
-
-export const StreamContext = createContext<StreamContextType>({
-  matches: [],
-});
+import { ReactNode, useEffect, useState } from 'react';
+import { StreamContext, MatchData } from './StreamContext';
 
 export default function StreamLayout({ children }: { children: ReactNode }) {
   const [matches, setMatches] = useState<MatchData[]>([]);
