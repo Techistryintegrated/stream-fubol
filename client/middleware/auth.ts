@@ -16,7 +16,8 @@ export async function requireAuth(req: NextRequest): Promise<{
   errorResponse: NextResponse | null;
 }> {
   try {
-    const token = req.cookies.get('token')?.value;
+    const token =
+      req.cookies.get('token')?.value || (await req.json())?.token;
 
     if (!token) {
       return {
