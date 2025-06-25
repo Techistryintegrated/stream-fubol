@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import FootballLoader from '../app/components/shared/Footballloader';
+import FootballLoader from '@/app/components/shared/Footballloader';
 
 interface User {
   email: string;

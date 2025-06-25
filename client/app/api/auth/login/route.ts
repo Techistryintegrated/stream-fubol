@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     });
 
     const response = NextResponse.json(
-      { success: true, msg: 'Logged in' },
+      { success: true, msg: 'Logged in', token: token },
       { status: 200 }
     );
 
