@@ -16,14 +16,20 @@ export async function requireAuth(req: NextRequest): Promise<{
   errorResponse: NextResponse | null;
 }> {
   try {
-    const token =
-      req.cookies.get('token')?.value || (await req.json())?.token;
+    const authHeader = req.headers.get('authorization');
+    let token: string | undefined;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else {
+      token = req.cookies.get('token')?.value || (await req.json())?.token;
+    }
 
     if (!token) {
       return {
         user: null,
         errorResponse: NextResponse.json(
-          { success: false, msg: 'Unauthorized: No token' },
+          { success: false, msg: 'Unauthorized: No token provided' },
           { status: 401 }
         ),
       };
@@ -46,3 +52,4 @@ export async function requireAuth(req: NextRequest): Promise<{
     };
   }
 }
+
