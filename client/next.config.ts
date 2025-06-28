@@ -1,9 +1,24 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
+/** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     domains: ['media.api-sports.io'],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.streamfutball.com',
+          },
+        ],
+        destination: 'https://streamfutball.com/:path*',
+        permanent: true,
+      },
+    ];
   },
 };
 
