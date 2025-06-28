@@ -33,7 +33,7 @@ export default function SignupPage() {
         {/* Logo & Headings */}
         <div className="text-center">
           <Image
-            src="/stream-fubol logo.svg"
+            src="/streamfutball.png"
             alt="Streamfutball"
             width={178}
             height={20}

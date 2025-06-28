@@ -18,7 +18,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 flex-shrink-0 z-20">
           <Image
-            src="/stream-fubol logo.svg"
+            src="/streamfutball.png"
             width={147}
             height={19}
             alt="stream fubol logo"

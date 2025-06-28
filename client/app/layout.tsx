@@ -24,17 +24,17 @@ export const metadata: Metadata = {
     'live football',
     'sports app',
   ],
-  authors: [{ name: 'Marvellous Ibironke', url: 'https://Streamfutball.com' }],
+  authors: [{ name: 'Marvellous Ibironke', url: 'https://streamfutball.com' }],
   creator: 'Techistry Integrated',
   openGraph: {
     title: 'Streamfutball - Watch Live Football Matches',
     description:
       'Catch live football games without signing up. Free, fast, and accessible on all devices.',
-    url: 'https://Streamfutball.com',
+    url: 'https://streamfutball.com',
     siteName: 'Streamfutball',
     images: [
       {
-        url: 'https://Streamfutball.com/og-image.jpg',
+        url: 'https://streamfutball.com/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Streamfutball - Watch Live Football',
@@ -48,10 +48,10 @@ export const metadata: Metadata = {
     title: 'Streamfutball - Watch Live Football',
     description:
       'Watch football matches live and free. Powered by licensed sources.',
-    images: ['https://Streamfutball.com/twitter-image.jpg'],
+    images: ['https://streamfutball.com/twitter-image.jpg'],
     creator: '@Streamfutball',
   },
-  metadataBase: new URL('https://Streamfutball.com'),
+  metadataBase: new URL('https://streamfutball.com'),
   themeColor: '#0d1117',
   viewport: 'width=device-width, initial-scale=1.0',
 };
