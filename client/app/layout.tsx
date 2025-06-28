@@ -66,6 +66,13 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4883362165426113"
+          crossOrigin="anonymous"
+        ></script>
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <ToastContainer position="bottom-right" theme="dark" />
         <UserProvider>

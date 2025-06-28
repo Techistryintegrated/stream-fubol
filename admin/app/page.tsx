@@ -1,9 +1,6 @@
-import SignInForm from "./components/auth/SignInForm";
+// app/page.tsx
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <>
-    <SignInForm />
-    </>
-  );
+  redirect('/dashboard');
 }
