@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log('Login attempt:', { email, password });
+
     await connectToDatabase();
 
     const user = await User.findOne({ email });
@@ -26,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
+    const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, {
       expiresIn: '24h',
     });
 
@@ -35,10 +37,15 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
 
+
     response.cookies.set('token', token, {
-      httpOnly: true,
+      httpOnly: true, // JS in the browser can’t read it
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'lax', // or 'none' + secure for cross‐subdomain
+      domain:
+        process.env.NODE_ENV === 'production'
+          ? '.streamfutbol.com'
+          : 'localhost', // dev: localhost
       path: '/',
       maxAge: 24 * 60 * 60, // 24 hours
     });
@@ -52,3 +59,17 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*', // or set specific origin
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+    },
+  });
+}
+

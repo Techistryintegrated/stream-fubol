@@ -1,135 +1,163 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { DateTime } from 'luxon';
-import { convertISTtoWAT } from '@/utils/timezone';
-import { getAllBadges } from '@/utils/getTeamBadge';
+// components/api/stream/route.ts
+import { NextResponse } from 'next/server';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
-export interface MatchApiType {
-  gmid: number;
-  ename: string;
-  etid: number;
-  cid: number;
-  cname: string;
-  iplay: boolean;
-  stime: string;
-  tv: boolean;
-  bm: boolean;
-  f: boolean;
-  f1: boolean;
-  iscc: number;
-  mid: number;
-  mname: string;
-  status: string;
-  rc: number;
-  gscode: number;
-  m: number;
-  oid: number;
-  gtype: string;
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const API_FOOTBALL_URL =
+  'https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all&timezone=UTC';
+const SCORESWIFT_URL =
+  'https://all-sport-live-stream.p.rapidapi.com/api/v2/all-live-stream';
+
+const footballHeaders = {
+  'x-rapidapi-key': process.env.RAPIDAPI_KEY as string,
+  'x-rapidapi-host': 'api-football-v1.p.rapidapi.com',
+};
+const streamHeaders = {
+  'x-rapidapi-key': process.env.RAPIDAPI_KEY as string,
+  'x-rapidapi-host': 'all-sport-live-stream.p.rapidapi.com',
+};
+
+interface ApiFootballFixture {
+  fixture: { id: number; date: string; status: { short: string } };
+  league: { name: string; logo: string };
+  teams: {
+    home: { name: string; logo: string };
+    away: { name: string; logo: string };
+  };
+  goals: { home: number | null; away: number | null };
 }
-
-interface MatchData {
+interface ScoreSwiftItem {
+  iframe_source: string;
+  m3u8_source: string;
+  match_id: number;
+  team_one_name: string;
+  team_two_name: string;
+}
+interface ScoreSwiftResponse {
+  sport_id: number;
+  data: ScoreSwiftItem[];
+}
+interface EnrichedMatch {
   gmid: number;
   league: string;
   leagueLogo: string;
-  time: string | null;
-  stime: string | null;
+  time: string;
+  stime: string;
   teamA: string;
   teamB: string;
   logoA: string;
   logoB: string;
+  score: string;
   iplay: boolean;
   status: string;
+  statusCode: string;
+  statusType: string;
+  stream: string | null;
 }
 
-interface ApiResponseData {
-  data?: {
-    t1?: MatchApiType[];
-  };
-}
+const STATUS_DICT: Record<string, { desc: string; type: string }> = {
+  NS: { desc: 'Not Started', type: 'Scheduled' },
+  '1H': { desc: 'First Half', type: 'In Play' },
+  HT: { desc: 'Halftime', type: 'In Play' },
+  '2H': { desc: 'Second Half', type: 'In Play' },
+  ET: { desc: 'Extra Time', type: 'In Play' },
+  BT: { desc: 'Break Time', type: 'In Play' },
+  P: { desc: 'Penalty Shootout', type: 'In Play' },
+  SUSP: { desc: 'Suspended', type: 'In Play' },
+  INT: { desc: 'Interrupted', type: 'In Play' },
+  LIVE: { desc: 'Live', type: 'In Play' },
+  FT: { desc: 'Full Time', type: 'Finished' },
+  AET: { desc: 'After Extra Time', type: 'Finished' },
+  PEN: { desc: 'Penalty Result', type: 'Finished' },
+  PST: { desc: 'Postponed', type: 'Postponed' },
+  CANC: { desc: 'Cancelled', type: 'Cancelled' },
+  ABD: { desc: 'Abandoned', type: 'Abandoned' },
+  AWD: { desc: 'Technical Loss', type: 'Not Played' },
+  WO: { desc: 'Walkover', type: 'Not Played' },
+};
 
-export async function GET(req: NextRequest) {
-  const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY as string;
+const normalize = (input: string): string =>
+  input
+    .normalize('NFD')
+    .replace(/[^\w\s]/g, '')
+    .toLowerCase()
+    .trim();
 
-  const { searchParams } = new URL(req.url);
-  const sportId = searchParams.get('sportId');
-  const type = searchParams.get('type');
-  const date = searchParams.get('date');
+const isTeamMatch = (a: string, b: string): boolean => {
+  const na = normalize(a);
+  const nb = normalize(b);
+  return na === nb || na.includes(nb) || nb.includes(na);
+};
 
-  if (!sportId) {
-    return NextResponse.json(
-      { success: false, msg: 'sportId is required' },
-      { status: 400 }
-    );
-  }
-
+export async function GET() {
   try {
-    const apiRes = await fetch(
-      `https://all-sport-live-stream.p.rapidapi.com/api/d/match_list?sportId=${sportId}`,
-      {
-        headers: {
-          'x-rapidapi-host': 'all-sport-live-stream.p.rapidapi.com',
-          'x-rapidapi-key': RAPIDAPI_KEY,
-        },
-      }
-    );
+    // Fetch live fixtures and stream data
+    const [fixturesRes, streamsRes] = await Promise.all([
+      fetch(API_FOOTBALL_URL, { headers: footballHeaders }),
+      fetch(SCORESWIFT_URL, { headers: streamHeaders }),
+    ]);
 
-    const data: ApiResponseData = await apiRes.json();
+    const fixturesJson = (await fixturesRes.json())
+      .response as ApiFootballFixture[];
+    const streamsJson = (await streamsRes.json()) as ScoreSwiftResponse[];
+    const liveStreams = streamsJson.find((s) => s.sport_id === 1)?.data ?? [];
 
-    if (!data.data?.t1) {
-      return NextResponse.json({ success: true, matches: [] });
-    }
+    const enriched: EnrichedMatch[] = fixturesJson.map((f) => {
+      const home = f.teams.home;
+      const away = f.teams.away;
+      const statusShort = f.fixture.status.short;
+      const { desc, type } = STATUS_DICT[statusShort] ?? {
+        desc: 'Unknown',
+        type: 'Unknown',
+      };
 
-    const cleanedMatches: MatchData[] = data.data.t1.map((match) => {
-      const convertedTime = match.stime ? convertISTtoWAT(match.stime) : null;
-      const [teamA = '', teamB = ''] = match.ename
-        ? match.ename.split(/\s[vV][sS]?\s| - /)
-        : ['', ''];
+      // Time conversion
+      const time = dayjs
+        .utc(f.fixture.date)
+        .tz('Africa/Lagos')
+        .format('YYYY-MM-DD HH:mm');
+      const score = `${f.goals.home ?? 0} - ${f.goals.away ?? 0}`;
+
+      // Match stream lookup
+      const streamMatch = liveStreams.find(
+        (s) =>
+          (isTeamMatch(s.team_one_name, home.name) &&
+            isTeamMatch(s.team_two_name, away.name)) ||
+          (isTeamMatch(s.team_one_name, away.name) &&
+            isTeamMatch(s.team_two_name, home.name))
+      );
+
+      // Use unique ID: stream match ID or fixture ID
+      const gmid = streamMatch?.match_id ?? f.fixture.id;
 
       return {
-        gmid: match.gmid,
-        league: match.cname,
-        leagueLogo: '/leagues/default.png',
-        time: convertedTime,
-        stime: convertedTime,
-        teamA,
-        teamB,
-        logoA: '',
-        logoB: '',
-        iplay: match.iplay,
-        status: match.status,
+        gmid,
+        league: f.league.name,
+        leagueLogo: f.league.logo,
+        time,
+        stime: f.fixture.date,
+        teamA: home.name,
+        teamB: away.name,
+        logoA: home.logo,
+        logoB: away.logo,
+        score,
+        iplay: type === 'In Play',
+        status: desc,
+        statusCode: statusShort,
+        statusType: type,
+        stream: streamMatch?.iframe_source ?? streamMatch?.m3u8_source ?? null,
       };
     });
 
-    let filtered = cleanedMatches.filter(
-      (m) =>
-        m.status !== 'SUSPENDED' &&
-        (type === 'upcoming' ? m.iplay === false : m.iplay === true)
-    );
-
-    if (type === 'upcoming' && date) {
-      filtered = filtered.filter(
-        (m) => m.stime && DateTime.fromISO(m.stime).toISODate() === date
-      );
-    }
-
-    const teamSet = new Set<string>();
-    filtered.forEach((m) => {
-      if (m.teamA) teamSet.add(m.teamA);
-      if (m.teamB) teamSet.add(m.teamB);
-    });
-
-    const badges = await getAllBadges(Array.from(teamSet));
-
-    const finalMatches = filtered.map((m) => ({
-      ...m,
-      logoA: badges[m.teamA] || '/soccerball.svg',
-      logoB: badges[m.teamB] || '/soccerball.svg',
-    }));
-
-    return NextResponse.json({ success: true, matches: finalMatches });
-  } catch (err: unknown) {
-    console.error('Error fetching match list:', (err as Error).message);
+    return NextResponse.json(enriched, { status: 200 });
+  } catch (error) {
+    console.error('Live match API error:', error);
     return NextResponse.json(
-      { success: false, msg: 'Server error' },
+      { error: 'Failed to load live matches' },
       { status: 500 }
     );
   }

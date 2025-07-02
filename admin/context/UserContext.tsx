@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import FootballLoader from '@/app/components/shared/Footballloader';
 
 interface User {
@@ -41,16 +42,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/profile', {
-        credentials: 'include',
+      const res = await axios.get('http://localhost:3000/api/auth/profile', {
+        withCredentials: true,
       });
-      if (!res.ok) {
-        setUser(null);
-      } else {
-        const json = await res.json();
-        setUser(json.user);
-        console.log('User fetched:', json.user);
-      }
+      setUser(res.data.user);
+      console.log('User fetched:', res.data.user);
     } catch {
       setUser(null);
     } finally {
@@ -61,10 +57,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // Logout
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await axios.post('/api/auth/logout', {}, { withCredentials: true });
       setUser(null);
       toast.success('Logged out');
       router.push('/login');
@@ -78,7 +71,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     refreshUser();
   }, []);
 
-  if (loading) return <FootballLoader />
+  if (loading) return <FootballLoader />;
 
   return (
     <UserContext.Provider value={{ user, loading, refreshUser, logout }}>

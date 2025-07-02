@@ -1,4 +1,6 @@
+// components/stream/LiveStream.tsx
 'use client';
+
 import { useRef, useState, useEffect } from 'react';
 import Hls from 'hls.js';
 import {
@@ -13,44 +15,47 @@ import {
 
 interface LiveStreamProps {
   src: string;
-  matchTitle: string;
   timeRange: string;
+  score?: string; // Optional score prop
+  teamA?: string; // Optional team names for HLS streams
+  teamB?: string; // Optional team names for HLS streams
 }
 
 export default function LiveStream({
   src,
-  matchTitle,
   timeRange,
+  score,
+  teamA,
+  teamB,
 }: LiveStreamProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const isEmbed = src.includes('iframe');
+  // Determine if source is an HLS manifest (.m3u8)
+  const isHls = src.includes('.m3u8');
 
   useEffect(() => {
-    if (isEmbed) return;
+    if (!isHls) return; // only attach Hls.js when needed
+
     const video = videoRef.current!;
-    // Always enable controls
     video.controls = true;
 
-    if (Hls.isSupported() && src.endsWith('.m3u8')) {
+    if (Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(src);
       hls.attachMedia(video);
       return () => hls.destroy();
     } else {
+      // Safari native HLS
       video.src = src;
     }
-  }, [src, isEmbed]);
+  }, [src, isHls]);
 
   const togglePlay = () => {
     const v = videoRef.current!;
-    if (isPlaying) {
-      v.pause();
-    } else {
-      v.play();
-    }
+    if (isPlaying) v.pause();
+    else v.play();
     setIsPlaying(!isPlaying);
   };
 
@@ -70,12 +75,21 @@ export default function LiveStream({
   const toggleFullScreen = () => {
     const v = videoRef.current!;
     if (document.fullscreenElement) document.exitFullscreen();
-    else v.requestFullscreen().catch(console.error);
+    else v.requestFullscreen()?.catch(console.error);
   };
 
   return (
     <div className="w-full max-w-full mx-auto rounded-lg overflow-hidden relative bg-black">
-      {isEmbed ? (
+      {isHls ? (
+        <video
+          ref={videoRef}
+          className="w-full h-auto"
+          muted={isMuted}
+          controls
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+        />
+      ) : (
         <div className="relative w-full pb-[56.25%]">
           <iframe
             src={src}
@@ -84,23 +98,12 @@ export default function LiveStream({
             className="absolute top-0 left-0 w-full h-full"
           />
         </div>
-      ) : (
-        <video
-          ref={videoRef}
-          className="w-full h-auto"
-          muted={isMuted}
-          // Show native controls for HLS or MP4
-          controls
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-        />
       )}
-
-      {!isEmbed && (
+      {isHls && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-transparent to-transparent px-4 py-3 text-white text-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="font-semibold">
-              {matchTitle}
+              {teamA} vs {teamB}
               <span className="ml-3 text-gray-400 font-normal">
                 {timeRange}
               </span>
@@ -134,189 +137,24 @@ export default function LiveStream({
           </div>
         </div>
       )}
+      <div
+        className=" flex-col
+      w-full
+      bg-green-600 text-white bg-opacity-60 backdrop-blur-sm
+      rounded-t-lg
+      py-2 px-4
+      flex justify-center items-center gap-3 space-x-8
+    "
+      >
+        <div className=" flex justify-center items-center space-x-8">
+          <span className="text-sm font-medium text-gray-200">{teamA}</span>
+          <span className="text-xl font-bold text-white">{score}</span>
+          <span className="text-sm font-medium text-gray-200">{teamB}</span>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-200">{timeRange}</p>
+        </div>
+      </div>{' '}
     </div>
   );
 }
-
-
-// 'use client';
-
-// import { useRef, useEffect, useState } from 'react';
-// import Hls from 'hls.js';
-// import {
-//   Volume2,
-//   VolumeX,
-//   RotateCcw,
-//   Maximize2,
-//   Settings,
-//   Play,
-//   Pause,
-// } from 'lucide-react';
-
-// interface LiveStreamProps {
-//   src: string; // either iframe URL or HLS manifest URL
-//   matchTitle: string;
-//   timeRange: string;
-// }
-
-// export default function LiveStream({
-//   src,
-//   matchTitle,
-//   timeRange,
-// }: LiveStreamProps) {
-//   const videoRef = useRef<HTMLVideoElement>(null);
-//   const [isEmbed, setIsEmbed] = useState(false);
-//   const [isMuted, setIsMuted] = useState(false);
-//   const [isPlaying, setIsPlaying] = useState(false);
-
-//   // Determine embed vs HLS
-//   useEffect(() => {
-//     setIsEmbed(src.includes('iframe'));
-//   }, [src]);
-
-//   // For HLS: perform DNS lookup & rewrite before playback
-//   useEffect(() => {
-//     if (isEmbed) return;
-
-//     let hls: Hls | undefined;
-//     let blobUrl: string | undefined;
-
-//     async function initHls() {
-//       try {
-//         const video = videoRef.current;
-//         if (!video) return;
-
-//         const url = new URL(src);
-//         const host = url.host;
-
-//         const dnsRes = await fetch(
-//           `https://hcdnl-pull302-global-gslb.livehwc3.cn/v1/live/dns?dns=${host}&withdomain=1&dualstack=1`
-//         );
-//         const dn = await dnsRes.json();
-//         const ipEntry = dn.data[host].ips[0];
-//         const replacement = ipEntry.domain || ipEntry.ip;
-
-//         const text = await fetch(src).then((r) => r.text());
-
-//         const rewritten = text.replace(
-//           new RegExp(`https://${host}`, 'g'),
-//           `https://${replacement}`
-//         );
-
-//         const blob = new Blob([rewritten], {
-//           type: 'application/vnd.apple.mpegurl',
-//         });
-//         const blobUrl = URL.createObjectURL(blob);
-
-//         video.controls = true;
-
-//         if (Hls.isSupported()) {
-//           const hls = new Hls();
-//           hls.loadSource(blobUrl);
-//           hls.attachMedia(video);
-//         } else {
-//           video.src = blobUrl;
-//         }
-//       } catch (err) {
-//         console.error('HLS init error', err);
-//       }
-//     }
-    
-
-//     initHls();
-
-//     return () => {
-//       hls?.destroy();
-//       if (blobUrl) URL.revokeObjectURL(blobUrl);
-//     };
-//   }, [src, isEmbed]);
-
-//   const togglePlay = () => {
-//     const v = videoRef.current!;
-//     if (isPlaying) {
-//       v.pause();
-//     } else {
-//       v.play();
-//     }
-//     setIsPlaying(!isPlaying);
-//   };
-//   const toggleMute = () => {
-//     const v = videoRef.current!;
-//     v.muted = !isMuted;
-//     setIsMuted(!isMuted);
-//   };
-//   const restart = () => {
-//     const v = videoRef.current!;
-//     v.currentTime = 0;
-//     v.play();
-//     setIsPlaying(true);
-//   };
-//   const toggleFS = () => {
-//     const v = videoRef.current!;
-//     if (document.fullscreenElement) document.exitFullscreen();
-//     else v.requestFullscreen().catch(console.error);
-//   };
-
-//   return (
-//     <div className="w-full mx-auto rounded-lg overflow-hidden relative bg-black">
-//       {isEmbed ? (
-//         // 16:9 wrapper
-//         <div className="relative w-full pb-[56.25%]">
-//           <iframe
-//             src={src}
-//             allowFullScreen
-//             frameBorder="0"
-//             className="absolute top-0 left-0 w-full h-full"
-//           />
-//         </div>
-//       ) : (
-//         <video
-//           ref={videoRef}
-//           className="w-full h-auto"
-//           muted={isMuted}
-//           controls
-//           onPlay={() => setIsPlaying(true)}
-//           onPause={() => setIsPlaying(false)}
-//         />
-//       )}
-
-//       {/* Controls overlay only for video mode */}
-//       {!isEmbed && (
-//         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-transparent to-transparent px-4 py-3 text-white text-sm">
-//           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-//             <div className="font-semibold">
-//               {matchTitle}
-//               <span className="ml-3 text-gray-400 font-normal">
-//                 {timeRange}
-//               </span>
-//             </div>
-//             <div className="flex gap-4 items-center mt-3 sm:mt-0">
-//               <div className="w-32 h-1 bg-white/30 rounded overflow-hidden">
-//                 <div className="w-2/5 h-full bg-[#00F0A9]" />
-//               </div>
-//               <button onClick={togglePlay} title="Play/Pause">
-//                 {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-//               </button>
-//               <button onClick={toggleMute} title="Mute/Unmute">
-//                 {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-//               </button>
-//               <button onClick={restart} title="Restart">
-//                 <RotateCcw size={18} />
-//               </button>
-//               <span className="bg-red-600 px-2 py-0.5 rounded text-xs font-bold">
-//                 LIVE
-//               </span>
-//               <button onClick={toggleFS} title="Fullscreen">
-//                 <Maximize2 size={18} />
-//               </button>
-//               <button onClick={() => alert('Settings')} title="Settings">
-//                 <Settings size={18} />
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-

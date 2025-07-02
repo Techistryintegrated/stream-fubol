@@ -1,89 +1,71 @@
-import { useEffect, useState } from 'react';
+'use client';
+
+import React from 'react';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { setSearchQuery, setSelectedLeague } from '@/store/matchesSlice';
 import MatchSearchBar from '../shared/MatchSearchBar';
 import LeagueFilter from '../shared/LeagueFilter';
 import { LeagueSection } from './LeagueSection';
 
-interface MatchData {
-  gmid: number;
-  league: string;
-  leagueLogo: string;
-  time: string;
-  teamA: string;
-  teamB: string;
-  logoA: string;
-  logoB: string;
-  stime: string;
-  iplay: boolean;
-  status: string;
-}
-
 export default function LiveMatches() {
-  const [matchesByLeague, setMatchesByLeague] = useState<
-    { league: string; matches: MatchData[] }[]
-  >([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector((state) => state.matches.loadingLive);
+  const searchQuery = useAppSelector((state) => state.matches.searchQuery);
+  const selectedLeague = useAppSelector(
+    (state) => state.matches.selectedLeague
+  );
+  const liveMatches = useAppSelector((state) => state.matches.liveMatches);
+  const filteredMatches = useAppSelector(
+    (state) => state.matches.filteredLiveMatches
+  );
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      setLoading(true);
-      const res = await fetch('/api/stream/match_list?sportId=1');
-      const { matches } = await res.json();
+  // derive unique leagues for filter
+  const leagues = Array.from(
+    new Map(liveMatches.map((m) => [m.league, m.leagueLogo]))
+  ).map(([league, logo]) => ({ league, logo }));
 
-      const grouped: Record<string, MatchData[]> = {};
-      matches.forEach((match: MatchData) => {
-        const safeMatch = {
-          ...match,
-          time: match.time ?? '',
-        };
-        if (!grouped[safeMatch.league]) grouped[safeMatch.league] = [];
-        grouped[safeMatch.league].push(safeMatch);
-      });
+  // group matches by league
+  const grouped: Record<string, typeof filteredMatches> = {};
+  filteredMatches.forEach((m) => {
+    (grouped[m.league] ??= []).push(m);
+  });
 
-      setMatchesByLeague(
-        Object.entries(grouped).map(([league, matches]) => ({
-          league,
-          matches,
-        }))
-      );
-      setLoading(false);
-    };
-    fetchMatches();
-  }, []);
+  const matchesByLeague = Object.entries(grouped).map(([league, matches]) => ({
+    league,
+    matches,
+  }));
 
   return (
-    <div className="bg-black min-h-screen px-4 pt-6 flex flex-col md:flex-row gap-6">
-      <div className="hidden lg:block w-20 text-white bg-white text-center text-sm">
-        AD
-        <br />
-        Space
-      </div>
+    <div className="bg-black min-h-screen pt-6 flex flex-col md:flex-row gap-6">
+      <div className="hidden lg:block w-20" />
       <div className="flex-1 max-w-5xl">
-        <div className="border-b border-gray-700 pb-4">
-          <MatchSearchBar />
-          <LeagueFilter />
-          <div className="rounded-[10px] border-[#222] border-2 p-5">
-            {loading ? (
-              <div className="text-white">Loading...</div>
-            ) : matchesByLeague.length === 0 ? (
-              <div className="text-white">No live streamable matches</div>
-            ) : (
-              matchesByLeague.map((section, i) => (
-                <LeagueSection
-                  key={i}
-                  league={section.league}
-                  matches={section.matches}
-                  type="live"
-                />
-              ))
-            )}
-          </div>
+        <MatchSearchBar
+          value={searchQuery}
+          onChange={(val: string) => dispatch(setSearchQuery(val))}
+        />
+        <LeagueFilter
+          leagues={leagues}
+          selected={selectedLeague}
+          onSelect={(val: string | null) => dispatch(setSelectedLeague(val))}
+        />
+        <div className="rounded-[10px] border-[#222] border-2 p-5 mt-5">
+          {loading ? (
+            <div className="text-white">Loading...</div>
+          ) : matchesByLeague.length === 0 ? (
+            <div className="text-white">No live streamable matches</div>
+          ) : (
+            matchesByLeague.map((section) => (
+              <LeagueSection
+                key={section.league}
+                league={section.league}
+                matches={section.matches}
+                type="live"
+              />
+            ))
+          )}
         </div>
       </div>
-      <div className="hidden lg:block w-20 text-white bg-white text-center text-sm">
-        AD
-        <br />
-        Space
-      </div>
+      <div className="hidden lg:block w-20" />
     </div>
   );
 }

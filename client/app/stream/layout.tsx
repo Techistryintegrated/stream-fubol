@@ -1,27 +1,21 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
-import { StreamContext, MatchData } from './StreamContext';
+import { ReactNode, useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { fetchLiveMatches } from '@/store/matchesSlice';
 
 export default function StreamLayout({ children }: { children: ReactNode }) {
-  const [matches, setMatches] = useState<MatchData[]>([]);
+  const dispatch = useAppDispatch();
+  // 👇 now pointing at the “live” slice
+  const alreadyLoaded = useAppSelector((s) => s.matches.liveMatches.length > 0);
+  const loadingLive = useAppSelector((s) => s.matches.loadingLive);
 
   useEffect(() => {
-    async function fetchMatches() {
-      try {
-        const res = await fetch('/api/stream/match_list?sportId=1');
-        const { matches } = await res.json();
-        setMatches(matches);
-      } catch {
-        setMatches([]);
-      }
+    // only dispatch if we haven’t loaded yet AND there’s no in-flight request
+    if (!alreadyLoaded && !loadingLive) {
+      dispatch(fetchLiveMatches());
     }
-    fetchMatches();
-  }, []);
+  }, [dispatch, alreadyLoaded, loadingLive]);
 
-  return (
-    <StreamContext.Provider value={{ matches }}>
-      {children}
-    </StreamContext.Provider>
-  );
+  return <>{children}</>;
 }

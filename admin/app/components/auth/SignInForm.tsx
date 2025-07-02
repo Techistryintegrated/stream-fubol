@@ -1,5 +1,5 @@
 'use client';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter,  } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
-import { useUser } from '@/context/UserContext';
+import axios from 'axios';
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -16,10 +16,10 @@ const LoginSchema = Yup.object().shape({
 
 export default function SignInForm() {
   const router = useRouter();
-  const params = useSearchParams();
-  const redirect = params?.get('redirect') ?? '/';
+  // const params = useSearchParams();
+  // // const redirect = params?.get('redirect') ?? '/';
   const [show, setShow] = useState(false);
-  const { refreshUser } = useUser();
+ 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4">
@@ -27,7 +27,7 @@ export default function SignInForm() {
         {/* Logo + Headings */}
         <div className="text-center">
           <Image
-            src="/stream-fubol logo.svg"
+            src="/streamfutball.png"
             alt="Streamfutball"
             width={178}
             height={20}
@@ -35,9 +35,7 @@ export default function SignInForm() {
           />
 
           <h1 className="mt-10 text-white text-2xl font-bold">Welcome back</h1>
-          <p className="text-[#A1A1A1]">
-            Sign in to your Streamfutball account
-          </p>
+          <p className="text-[#A1A1A1]">Sign in to Streamfutball admin</p>
         </div>
 
         {/* Formik Form */}
@@ -46,23 +44,29 @@ export default function SignInForm() {
           validationSchema={LoginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const res = await fetch('/api/auth/login/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', // <— include cookie
-                body: JSON.stringify(values),
-              });
-              const json = await res.json();
-              if (!res.ok) throw new Error(json.msg || 'Login failed');
+              // 1) Authenticate and grab token
+              const res = await axios.post(
+                'http://localhost:3000/api/auth/login',
+                values
+              );
+              const { token } = res.data as { token: string };
+
+              // 2) Store token
+              localStorage.setItem('sf_admin_token', token);
+
+              // 3) Attach token to future requests
+              axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+
               toast.success('Logged in successfully');
-              await refreshUser();
-              setTimeout(() => router.push(redirect), 800);
+
+              // 4) Navigate to dashboard
+              router.push('/dashboard');
             } catch (err: unknown) {
-              const errorMsg =
-                err instanceof Error
-                  ? err.message
-                  : 'An unknown error occurred';
-              toast.error(errorMsg);
+              const msg =
+                axios.isAxiosError(err) && err.response?.data?.msg
+                  ? err.response.data.msg
+                  : 'Login failed';
+              toast.error(msg);
             } finally {
               setSubmitting(false);
             }
@@ -76,12 +80,6 @@ export default function SignInForm() {
                   '0px 10px 15px -3px rgba(0, 0, 0, 0.10), 0px 4px 6px -4px rgba(0, 0, 0, 0.10)',
               }}
             >
-              <div className="text-center space-y-2">
-                <h3 className="text-base text-[#FAFAFA] ">Sign In</h3>
-                <p className="text-[13px] text-[##A1A1A1] ">
-                  Enter your credentials to access your account
-                </p>
-              </div>
               <div className="mt-[35px] relative">
                 <label
                   className="text-[13px] text-[#FAFAFA] font-medium"
@@ -147,14 +145,6 @@ export default function SignInForm() {
                 />
               </div>
               <div className="flex justify-between text-sm text-gray-400">
-                {/* <label className="flex items-center">
-                  <Field
-                    type="checkbox"
-                    name="remember"
-                    className="h-4 w-4 text-white"
-                  />
-                  <span className="ml-2">Remember me</span>
-                </label> */}
                 <a
                   href="/forgot-password"
                   className="text-[white] text-[12px] font-medium hover:underline"
@@ -181,7 +171,6 @@ export default function SignInForm() {
           )}
         </Formik>
 
-        {/* Sign Up Link */}
         <p className="text-center text-gray-400 text-sm">
           By signing in, you agree to our{' '}
           <a

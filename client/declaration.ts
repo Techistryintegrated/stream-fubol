@@ -1,20 +1,24 @@
-export interface Match {
-  gmid: number;
+// client/declaration.ts
+export interface MatchData {
+  gmid: number | null;
   league: string;
   leagueLogo: string;
-  time: string | null;
+  time: string;
+  stime: string;
   teamA: string;
   teamB: string;
   logoA: string;
   logoB: string;
-  stime: string | null;
   iplay: boolean;
   status: string;
+  statusCode?: string;
+  statusType?: string;
+  score?: string;
+  stream?: string;
 }
-
 
 export interface LeagueSectionProps {
   league: string;
-  matches: Match[];
+  matches: MatchData[];
   type: 'live' | 'upcoming';
 }

@@ -29,7 +29,7 @@ export default function UserManagementPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <UserStatsCard label="Total Users" value={5} description="Registered users" type="total" />
         <UserStatsCard label="Active Users" value={3} description="Currently active" type="active" />
-        <UserStatsCard label="Suspended Users" value={1} description="Need attention" type="suspended" />
+        {/* <UserStatsCard label="Suspended Users" value={1} description="Need attention" type="suspended" /> */}
       </div>
 
       {/* User Table */}

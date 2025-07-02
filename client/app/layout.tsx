@@ -1,15 +1,11 @@
+
+
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 // import Navbar from "./components/shared/navbar";
-import { ToastContainer } from 'react-toastify';
-import LayoutWithNavbar from './components/LayoutWithNavbar';
-import { UserProvider } from '../context/UserContext';
 
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-});
+import ClientLayout from './ClientLayout';
+
 
 export const metadata: Metadata = {
   title: 'Streamfutball - Watch Live Football Matches',
@@ -66,18 +62,8 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4883362165426113"
-          crossOrigin="anonymous"
-        ></script>
-      </head>
-      <body className={`${inter.variable} antialiased`}>
-        <ToastContainer position="bottom-right" theme="dark" />
-        <UserProvider>
-          <LayoutWithNavbar>{children}</LayoutWithNavbar>
-        </UserProvider>
+      <body>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
