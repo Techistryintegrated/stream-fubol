@@ -20,7 +20,9 @@ export async function middleware(req: NextRequest) {
     pathname === '/api/auth/login' ||
     pathname === '/api/auth/signup' ||
     pathname === '/login' ||
-    pathname === '/signup'
+    pathname === '/signup' ||
+    pathname === '/api/stream/match_list' ||
+    pathname === '/api/stream/upcoming_matches' 
   ) {
     return NextResponse.next();
   }
