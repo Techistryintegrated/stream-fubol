@@ -1,33 +1,43 @@
-// File: app/api/auth/profile/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { connectToDatabase } from '@/utils/db';
+import { requireAuth } from '@/middleware/auth';
+import { User } from '@/models/User';
 
-const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
-
-export async function GET(request: NextRequest) {
-  // 1. Extract token from HttpOnly cookie
-  const token = request.cookies.get('token')?.value;
-  if (!token) {
-    return NextResponse.json(
-      { success: false, msg: 'Unauthorized: No token' },
-      { status: 401 }
-    );
-  }
-
-  // 2. Verify JWT
+export async function GET(req: NextRequest) {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
-    // 3. Return the user data you need
-    const userData = {
-      userId: payload.userId,
-      role: payload.role,
-      email: (payload).email, // if you encoded email in token
-    };
-    return NextResponse.json({ success: true, user: userData });
-  } catch {
+    const authResult = await requireAuth(req);
+
+    if (authResult.errorResponse) {
+      return authResult.errorResponse;
+    }
+
+    const user = authResult.user;
+    if (!user) {
+      return NextResponse.json(
+        { success: false, msg: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+
+    const foundUser = await User.findById(user.userId).select(
+      'email name createdAt'
+    );
+
+    if (!foundUser) {
+      return NextResponse.json(
+        { success: false, msg: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, user: foundUser });
+  } catch (err) {
+    console.error('Fetch profile error:', err);
     return NextResponse.json(
-      { success: false, msg: 'Unauthorized: Invalid token' },
-      { status: 401 }
+      { success: false, msg: 'Server error' },
+      { status: 500 }
     );
   }
 }
