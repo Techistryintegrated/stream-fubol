@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
 
   if (!token) {
-    return new NextResponse('Unauthorized', { status: 401 });
+    return new NextResponse('Unauthorized ', { status: 401 });
   }
 
   try {
