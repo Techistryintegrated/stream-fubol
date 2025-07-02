@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       sameSite: 'lax', // or 'none' + secure for cross‐subdomain
       domain:
         process.env.NODE_ENV === 'production'
-          ? '.streamfutbol.com'
+          ? '.streamfutball.com'
           : 'localhost', // dev: localhost
       path: '/',
       maxAge: 24 * 60 * 60, // 24 hours
