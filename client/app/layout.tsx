@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: 'Streamfutball',
     images: [
       {
-        url: 'https://streamfutball.com/og-image.jpg',
+        url: 'https://streamfutball.com/streamfutball.png',
         width: 1200,
         height: 630,
         alt: 'Streamfutball - Watch Live Football',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: 'Streamfutball - Watch Live Football',
     description:
       'Watch football matches live and free. Powered by licensed sources.',
-    images: ['https://streamfutball.com/twitter-image.jpg'],
+    images: ['https://streamfutball.com/streamfutball.png'],
     creator: '@Streamfutball',
   },
   metadataBase: new URL('https://streamfutball.com'),
