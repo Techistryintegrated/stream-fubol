@@ -39,3 +39,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/config/regal-yew-464802-e2-1cd7c7715756.json

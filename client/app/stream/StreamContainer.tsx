@@ -18,6 +18,17 @@ export default function StreamContainer() {
   const gmid = raw ? Number(raw) : undefined;
   const isViewer = typeof gmid === 'number' && !isNaN(gmid);
 
+
+  useEffect(() => {
+    if (gmid) {
+      fetch('/api/match-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gmid }),
+      });
+    }
+  }, [gmid]);
+
   // 📌 **UNCHANGED**: get full live list for selecting the player
   const allMatches = useAppSelector((s) => s.matches.liveMatches);
   const loadingMatches = useAppSelector((s) => s.matches.loadingLive);
