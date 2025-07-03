@@ -1,11 +1,10 @@
-
-
 import type { Metadata } from 'next';
 import './globals.css';
+import Script from 'next/script';
+
 // import Navbar from "./components/shared/navbar";
 
 import ClientLayout from './ClientLayout';
-
 
 export const metadata: Metadata = {
   title: 'Streamfutball - Watch Live Football Matches',
@@ -62,6 +61,24 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-LT1GNPBVXD"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-LT1GNPBVXD');
+    `,
+          }}
+        />
+      </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
       </body>

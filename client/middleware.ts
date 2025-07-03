@@ -3,28 +3,69 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'http://localhost:3001',
+  'https://admin.streamfutball.com',
+];
+
 // Shared secret for both cookie-based and header-based tokens
 type JwtPayload = { userId: string; role: string; exp: number };
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 export const config = {
-  // Protect both dashboard pages and API routes except auth endpoints:
+  // Protect both dashboard pages and API routes except auth/stream endpoints
   matcher: ['/dashboard/:path*', '/api/:path*'],
 };
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const origin = req.headers.get('origin') || '';
 
-  // Bypass auth on public auth endpoints:
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS' && pathname.startsWith('/api/')) {
+    const headers = new Headers();
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      headers.set('Access-Control-Allow-Origin', origin);
+      headers.set('Access-Control-Allow-Credentials', 'true');
+      headers.set(
+        'Access-Control-Allow-Methods',
+        'GET,POST,PUT,DELETE,OPTIONS'
+      );
+      headers.set(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Authorization'
+      );
+    }
+    return new Response(null, { status: 204, headers });
+  }
+
+  // Bypass auth on public endpoints
   if (
     pathname === '/api/auth/login' ||
     pathname === '/api/auth/signup' ||
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/api/stream/match_list' ||
-    pathname === '/api/stream/upcoming_matches' 
+    pathname === '/api/stream/upcoming_matches'
   ) {
-    return NextResponse.next();
+    // Also inject CORS for real API calls
+    const res = NextResponse.next();
+    if (pathname.startsWith('/api/') && ALLOWED_ORIGINS.includes(origin)) {
+      res.headers.set('Access-Control-Allow-Origin', origin);
+      res.headers.set('Access-Control-Allow-Credentials', 'true');
+    }
+    return res;
+  }
+
+  // For actual API responses, inject CORS headers
+  let response: NextResponse;
+  if (pathname.startsWith('/api/') && ALLOWED_ORIGINS.includes(origin)) {
+    response = NextResponse.next();
+    response.headers.set('Access-Control-Allow-Origin', origin);
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+  } else {
+    response = NextResponse.next();
   }
 
   // 1) Extract token: prefer Authorization header, fallback to HttpOnly cookie
@@ -65,7 +106,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // 5) Allow the request
-    return NextResponse.next();
+    return response;
   } catch {
     // expired or invalid
     if (pathname.startsWith('/api/')) {

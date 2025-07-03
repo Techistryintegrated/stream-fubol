@@ -42,7 +42,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:3000/api/auth/profile', {
+      const apiUrl = process.env.NEXT_PUBLIC_APIURL;
+      console.log('API URL:', apiUrl);
+      const res = await axios.get(`${apiUrl}/api/auth/profile`, {
         withCredentials: true,
       });
       setUser(res.data.user);
