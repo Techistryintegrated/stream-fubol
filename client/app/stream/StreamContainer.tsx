@@ -21,13 +21,13 @@ export default function StreamContainer() {
 
   useEffect(() => {
     if (gmid) {
-      fetch('/api/match-view', {
+      fetch('/api/admin/match-view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gmid }),
+        body: JSON.stringify({ gmid, userId: user?._id }),
       });
     }
-  }, [gmid]);
+  }, [gmid, user]);
 
   // 📌 **UNCHANGED**: get full live list for selecting the player
   const allMatches = useAppSelector((s) => s.matches.liveMatches);

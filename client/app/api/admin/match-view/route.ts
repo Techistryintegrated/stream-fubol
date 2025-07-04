@@ -18,7 +18,9 @@ export async function POST(req: NextRequest) {
       userId: null, 
     });
     return NextResponse.json({ success: true });
-  } catch  {
+  } catch(err)  {
+    console.error('Match view logging error:', err);
+
     return NextResponse.json(
       { success: false, msg: 'Server error' },
       { status: 500 }
