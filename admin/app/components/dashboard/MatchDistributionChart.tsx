@@ -39,7 +39,7 @@ const MatchDistributionChart: React.FC<MatchDistributionChartProps> = ({
           <Pie
             data={data}
             dataKey="count"
-            nameKey="_id"
+            nameKey="match"
             outerRadius={90}
             fill="#8884d8"
             label
@@ -68,7 +68,7 @@ const MatchDistributionChart: React.FC<MatchDistributionChartProps> = ({
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
               <span className="text-[#E4E4E7]">
-                {item.league || item._id}
+                { item.match}
               </span>
             </div>
             <span className="text-[#A1A1AA]">
