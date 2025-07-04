@@ -2,14 +2,13 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Users, BarChart2, Settings } from 'lucide-react';
+import { LayoutDashboard, Users } from 'lucide-react';
 import Image from 'next/image';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-  { label: 'User Management', icon: Users, href: 'dashboard/users' },
-  { label: 'Analytics', icon: BarChart2, href: '/dashboard/analytics' },
-  { label: 'Settings', icon: Settings, href: '/dashboard/settings' },
+  { label: 'User Management', icon: Users, href: '/dashboard/users' },
+
 ];
 
 export default function Sidebar() {

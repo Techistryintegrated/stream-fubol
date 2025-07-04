@@ -44,7 +44,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_APIURL;
       console.log('API URL:', apiUrl);
-      const res = await axios.get(`${apiUrl}/api/auth/profile`, {
+      const res = await axios.get(`/api/auth/profile`, {
         withCredentials: true,
       });
       setUser(res.data.user);

@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     // 1. User Stats
     const userCount = await User.countDocuments();
 
-    // New users today
+    // New users todayF
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const newUsersToday = await User.countDocuments({
@@ -51,10 +51,18 @@ export async function GET(req: NextRequest) {
     today.setHours(0, 0, 0, 0);
     const topMatches = await MatchView.aggregate([
       { $match: { viewedAt: { $gte: today } } },
-      { $group: { _id: '$gmid', count: { $sum: 1 } } },
+      {
+        $group: {
+          _id: '$gmid', // group by gmid
+          count: { $sum: 1 },
+          match: { $first: '$match' }, // get first match name
+          league: { $first: '$league' }, // get first league
+        },
+      },
       { $sort: { count: -1 } },
       { $limit: 5 },
     ]);
+    
     
 
     const recentUsers = await User.find()

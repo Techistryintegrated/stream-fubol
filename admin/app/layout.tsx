@@ -4,6 +4,8 @@ import './globals.css';
 // import Navbar from "./components/shared/navbar";
 import { ToastContainer } from 'react-toastify';
 import { UserProvider } from '@/context/UserContext';
+import { AnalyticsProvider } from '@/context/AnalyticsContext';
+import ClientInit from './components/shared/ClientInit';
 
 
 const inter = Inter({
@@ -68,8 +70,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <ToastContainer position="bottom-right" theme="dark" />
+        <ClientInit />
+
         <UserProvider>
-         {children}
+          <AnalyticsProvider>{children}</AnalyticsProvider>
         </UserProvider>
       </body>
     </html>

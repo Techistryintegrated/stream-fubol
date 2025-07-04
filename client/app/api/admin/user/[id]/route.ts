@@ -1,3 +1,4 @@
+//api/admin/user/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import { requireAuth } from '@/middleware/auth';

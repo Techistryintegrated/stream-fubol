@@ -13,27 +13,31 @@ export default function StreamContainer() {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useUser();
+  const [selected, setSelected] = useState<MatchData | null>(null);
 
   const raw = params?.gmid;
   const gmid = raw ? Number(raw) : undefined;
   const isViewer = typeof gmid === 'number' && !isNaN(gmid);
 
-
   useEffect(() => {
-    if (gmid) {
+    if (gmid && user?._id && selected) {
       fetch('/api/admin/match-view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gmid, userId: user?._id }),
+        body: JSON.stringify({
+          gmid,
+          userId: user._id,
+          league: selected.league,
+          match: `${selected.teamA} vs ${selected.teamB}`,
+        }),
       });
     }
-  }, [gmid, user]);
+  }, [gmid, user?._id, selected]);
+  
 
   // 📌 **UNCHANGED**: get full live list for selecting the player
   const allMatches = useAppSelector((s) => s.matches.liveMatches);
   const loadingMatches = useAppSelector((s) => s.matches.loadingLive);
-
-  const [selected, setSelected] = useState<MatchData | null>(null);
 
   // 👇 derive selected from the **unfiltered** list
   useEffect(() => {
@@ -68,7 +72,6 @@ export default function StreamContainer() {
           {selected?.stream ? (
             <LiveStream
               src={selected.stream}
-              
               teamA={selected.teamA}
               teamB={selected.teamB}
               timeRange={selected.time}

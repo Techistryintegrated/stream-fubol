@@ -6,8 +6,7 @@ const csp = `
   font-src 'self' data: https://fonts.gstatic.com;
   connect-src * https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://adservice.google.com https://securepubads.g.doubleclick.net;
   frame-ancestors 'self';
-  frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.youtube.com;
-  object-src 'none';
+  frame-src https://*.scoreswift.in https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.youtube.com;  object-src 'none';
   base-uri 'self';
 `
   .replace(/\s{2,}/g, ' ')

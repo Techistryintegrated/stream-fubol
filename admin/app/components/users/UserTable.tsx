@@ -1,60 +1,61 @@
-// components/UserTable.tsx
-import { MapPin, MoreHorizontal } from 'lucide-react';
+'use client';
+import { useState } from 'react';
+import { Trash } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 
-type UserStatus = "Active" | "Suspended" | "Inactive";
+type User = {
+  _id: string;
+  name: string;
+  email: string;
+  role?: string;
+  createdAt?: string;
+};
 
-const users: { 
-  name: string; 
-  email: string; 
-  status: UserStatus; 
-  views: number; 
-  lastLogin: string; 
-  location: string; 
-}[] = [
-  {
-    name: 'John Doe',
-    email: 'john.doe@email.com',
-    status: 'Active',
-    views: 142,
-    lastLogin: 'Jun 5, 2024, 02:30 PM',
-    location: 'Spain',
-  },
-  {
-    name: 'Jane Smith',
-    email: 'jane.smith@email.com',
-    status: 'Active',
-    views: 89,
-    lastLogin: 'Jun 4, 2024, 08:15 PM',
-    location: 'United Kingdom',
-  },
-  {
-    name: 'Mike Johnson',
-    email: 'mike.johnson@email.com',
-    status: 'Suspended',
-    views: 67,
-    lastLogin: 'May 28, 2024, 04:45 PM',
-    location: 'Germany',
-  },
-  {
-    name: 'Sara Wilson',
-    email: 'sara.wilson@email.com',
-    status: 'Active',
-    views: 234,
-    lastLogin: 'Jun 5, 2024, 11:20 AM',
-    location: 'France',
-  },
-  {
-    name: 'David Brown',
-    email: 'david.brown@email.com',
-    status: 'Inactive',
-    views: 156,
-    lastLogin: 'May 15, 2024, 09:30 AM',
-    location: 'Italy',
-  },
-];
+export default function UserTable({
+  users,
+  loading,
+  error,
+  onDelete, // Optional: for parent to refresh or update user list
+}: {
+  users: User[];
+  loading?: boolean;
+  error?: string | null;
+  onDelete?: (id: string) => void;
+}) {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-export default function UserTable() {
+  async function handleDelete(id: string) {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this user?'
+    );
+    if (!confirmed) return;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/admin/user/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (onDelete) onDelete(id); // Parent can remove from list or refetch
+      } else {
+        alert(data.msg || 'Failed to delete user');
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Server error deleting user';
+      alert(errorMessage);
+    }
+    setDeletingId(null);
+  }
+
+  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (error)
+    return <div className="text-red-500 text-center py-10">{error}</div>;
+  if (!users.length)
+    return (
+      <div className="text-center text-zinc-500 py-10">No users found.</div>
+    );
+
   return (
     <div className="mt-6 border border-[#262626] rounded-xl p-4">
       <h2 className="text-md text-white mb-2">Users ({users.length})</h2>
@@ -67,16 +68,15 @@ export default function UserTable() {
             <tr className="border-b border-[#262626]">
               <th className="py-2">User</th>
               <th>Status</th>
-              <th>Views</th>
-              <th>Last Login</th>
-              <th>Location</th>
-              <th className="text-right">Actions</th>
+              <th>Role</th>
+              <th>Date Joined</th>
+              <th className="text-right"></th>
             </tr>
           </thead>
           <tbody>
-            {users.map((u, idx) => (
+            {users.map((u) => (
               <tr
-                key={idx}
+                key={u._id}
                 className="border-b border-[#1f1f1f] hover:bg-zinc-900"
               >
                 <td className="py-3">
@@ -86,20 +86,29 @@ export default function UserTable() {
                   </div>
                 </td>
                 <td>
-                  <StatusBadge status={u.status} />
+                  <StatusBadge status="Active" />
                 </td>
-                <td className="text-zinc-300">▷ {u.views}</td>
-                <td className="text-zinc-300">{u.lastLogin}</td>
-
-                <td>
-                  <div className="flex items-center gap-1 text-zinc-400">
-                    <MapPin className="w-3 h-3 mt-[1px]" />
-                    <span className="whitespace-nowrap">{u.location}</span>
-                  </div>
+                <td className="text-zinc-300 capitalize"> {u.role ?? '-'}</td>
+                <td className="text-zinc-300">
+                  {u.createdAt
+                    ? new Date(u.createdAt).toLocaleString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : '-'}
                 </td>
-
                 <td className="text-right pr-2 align-middle">
-                  <MoreHorizontal className="w-4 h-4 text-zinc-500 cursor-pointer inline-block" />
+                  <button
+                    disabled={deletingId === u._id}
+                    onClick={() => handleDelete(u._id)}
+                    className="disabled:opacity-50"
+                    title="Delete user"
+                  >
+                    <Trash className="w-4 h-4 text-red-500 cursor-pointer inline-block" />
+                  </button>
                 </td>
               </tr>
             ))}

@@ -1,6 +1,6 @@
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
 
-const PROPERTY_ID = 'GA4_PROPERTY_ID'; // e.g., 123456789
+const PROPERTY_ID = process.env.GA_PROPERTY_ID; // e.g., 123456789
 const KEY_FILE =
   process.env.GA_CREDENTIALS_PATH ||
   'config/regal-yew-464802-e2-1cd7c7715756.json';
