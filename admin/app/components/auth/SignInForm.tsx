@@ -45,10 +45,9 @@ export default function SignInForm() {
           onSubmit={async (values, { setSubmitting }) => {
             try {
               // 1) Authenticate and grab 
-              const apiUrl =
-                process.env.NEXT_PUBLIC_APIURL || 'http://localhost:3000';
+            
               const res = await axios.post(
-                `${apiUrl}/api/auth/login`,
+                '/api/auth/login',
                 values
               );
               const { token } = res.data as { token: string };
