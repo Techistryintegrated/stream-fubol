@@ -83,8 +83,8 @@ export default function StreamContainer() {
             </div>
           )}
         </div>
-        {/* below, <Matches /> will read from filteredLiveMatches for its listing */}
-        <Matches />
+        <div className='mt-10'>
+        <Matches /></div>
       </div>
     </div>
   );
