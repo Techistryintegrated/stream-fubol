@@ -1,26 +1,54 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useState as useReactState,
+} from 'react';
 import UpcomingMatches from './UpcomingMatches';
 import LiveMatches from './LiveMatches';
 import AdUnit from '../shared/AdUnit';
 
 export default function Matches() {
   const [activeTab, setActiveTab] = useState<'live' | 'upcoming'>('live');
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useReactState(0);
+
+  useEffect(() => {
+    const currentRef = contentRef.current;
+    const resizeObserver = new ResizeObserver(() => {
+      if (currentRef) {
+        setContentHeight(currentRef.offsetHeight);
+      }
+    });
+
+    if (currentRef) {
+      resizeObserver.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        resizeObserver.unobserve(currentRef);
+      }
+    };
+  }, [setContentHeight]);
 
   return (
-    <div className="w-full flex justify-center bg-black text-white py-10 px-4">
-      {/* Outer wrapper: full width */}
-      <div className="flex w-full max-w-[1600px]">
-        {/* Left Ad: fill purple area */}
-        <div className="hidden lg:flex justify-center items-start w-[200px]">
-          <AdUnit />
+    <div className="w-full flex justify-center bg-black text-white py-10 px-2">
+      <div className="flex w-full max-w-[1400px] gap-4 items-start">
+        {/* Left Ad */}
+        <div className="hidden lg:block" style={{ height: contentHeight }}>
+          <div className="sticky top-10 h-full flex flex-col gap-4">
+            <AdUnit />
+            <AdUnit />
+          </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 max-w-6xl mx-auto">
+        <div className="flex-1 max-w-6xl" ref={contentRef}>
           {/* Tabs */}
-          <div className="flex gap-6 border-b border-gray-700 px-4 md:px-10 mb-6">
+          <div className="flex gap-6 border-b border-gray-700 px-4 mb-6">
             <button
               className={`pb-2 transition ${
                 activeTab === 'live'
@@ -43,14 +71,17 @@ export default function Matches() {
             </button>
           </div>
 
-          {/* Match Content */}
+          {/* Content */}
           {activeTab === 'live' && <LiveMatches />}
           {activeTab === 'upcoming' && <UpcomingMatches />}
         </div>
 
-        {/* Right Ad: fill purple area */}
-        <div className="hidden lg:flex justify-center items-start w-[200px]">
-          <AdUnit />
+        {/* Right Ad */}
+        <div className="hidden lg:block" style={{ height: contentHeight }}>
+          <div className="sticky top-10 h-full flex flex-col gap-4">
+            <AdUnit />
+            <AdUnit />
+          </div>
         </div>
       </div>
     </div>
