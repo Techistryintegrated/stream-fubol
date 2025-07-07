@@ -88,7 +88,7 @@ export default function StreamContainer() {
               </h2>
               <p className="text-gray-400 text-sm">
                 Select any live match below to start watching a high-quality
-                stream in real time. Enjoy the action, no account needed!
+                stream in real time. Enjoy the action, no payment needed!
               </p>
             </div>
           </div>
