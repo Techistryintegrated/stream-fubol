@@ -28,7 +28,7 @@ export default function AdUnit() {
   }, []);
 
   return (
-    <div className="w-full bg-red-600 h-auto text-center">
+    <div className="w-full h-auto text-center">
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100px' }}
