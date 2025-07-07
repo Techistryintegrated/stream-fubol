@@ -110,7 +110,7 @@ export default function StreamContainer() {
               <AdUnit />
             </div>
           </div>
-          <div className="relative w-[60%] bg-black rounded-lg overflow-hidden ">
+          <div className="relative w-full lg:w-[60%] bg-black rounded-lg overflow-hidden ">
             {selected?.stream ? (
               <LiveStream
                 src={selected.stream}
