@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
   // Bypass auth on public endpoints
   if (
     pathname === '/api/auth/login' ||
-    pathname === '/api/auth/signup' ||
+    pathname === '/api/auth/register' ||
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/api/stream/match_list' ||
