@@ -36,9 +36,9 @@ export default function LiveMatches() {
   }));
 
   return (
-    <div className="bg-black min-h-screen pt-6 flex flex-col md:flex-row gap-6">
+    <div className="bg-black min-w-full min-h-screen pt-6 flex flex-col gap-6">
       <div className="hidden lg:block w-20" />
-      <div className="flex-1 max-w-5xl">
+      <div className="flex-1 ">
         <MatchSearchBar
           value={searchQuery}
           onChange={(val: string) => dispatch(setSearchQuery(val))}

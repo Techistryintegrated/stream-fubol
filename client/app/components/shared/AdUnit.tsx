@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 
-// Extend the Window interface to include adsbygoogle
+// Extend window.adsbygoogle
 declare global {
   interface Window {
     adsbygoogle?: unknown[];
@@ -11,22 +11,24 @@ declare global {
 export default function AdUnit() {
   useEffect(() => {
     const timeout = setTimeout(() => {
+      const ins = document.querySelector('.adsbygoogle') as HTMLElement | null;
+      if (!ins) return;
+      const width = ins.offsetWidth;
+      // only run AdSense when there's actually space
+      if (width < 160) return;
+
       try {
-        // Optional: only push if element is in DOM
-        if (window.adsbygoogle && document.querySelector('.adsbygoogle')) {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-        }
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
-        console.error('AdSense error:', e);
+        console.error('AdSense push error:', e);
       }
-    }, 1000); // wait until layout settles
+    }, 1000);
 
     return () => clearTimeout(timeout);
   }, []);
-  
 
   return (
-    <div className="w-full min-w-[300px] h-auto text-center">
+    <div className="w-full   text-center">
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100px' }}

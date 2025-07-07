@@ -1,3 +1,4 @@
+// Matches.tsx
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -10,71 +11,71 @@ export default function Matches() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
 
+  // Measure main panel for sticky ads
   useEffect(() => {
-    const updateHeight = () => {
+    const update = () => {
       if (contentRef.current) {
         setContentHeight(contentRef.current.offsetHeight);
       }
     };
-
-    updateHeight(); // Initial run
-
-    const resizeObserver = new ResizeObserver(updateHeight);
-    if (contentRef.current) resizeObserver.observe(contentRef.current);
-
-    return () => resizeObserver.disconnect();
+    update();
+    const ro = new ResizeObserver(update);
+    if (contentRef.current) ro.observe(contentRef.current);
+    return () => ro.disconnect();
   }, []);
 
   return (
     <div className="w-full overflow-x-hidden bg-black text-white py-10 px-2">
-      <div className="max-w-[1400px] mx-auto flex flex-row items-start gap-4">
-        {/* Left Ad */}
-        <div
-          className="hidden lg:block w-[160px] shrink-0"
-          style={{ height: contentHeight }}
-        >
-          <div className="sticky top-10 h-full flex flex-col gap-4">
+      <div className="flex w-full items-start gap-4">
+        {/* Left ad = 20% on lg+, hidden below */}
+        <div className="hidden lg:block flex-none w-[20%]">
+          <div
+            className="sticky top-10 flex flex-col gap-4"
+            style={{ height: contentHeight }}
+          >
             <AdUnit />
             <AdUnit />
           </div>
         </div>
 
-        {/* Main Content */}
-        <div ref={contentRef} className="flex-1 min-w-0 max-w-full">
-          {/* Tabs */}
-          <div className="flex gap-6 border-b border-gray-700 px-4 mb-6">
-            <button
-              className={`pb-2 transition ${
-                activeTab === 'live'
-                  ? 'text-white border-b-2 border-green-500'
-                  : 'text-gray-400'
-              }`}
-              onClick={() => setActiveTab('live')}
-            >
-              Live Matches
-            </button>
-            <button
-              className={`pb-2 transition ${
-                activeTab === 'upcoming'
-                  ? 'text-white border-b-2 border-green-500'
-                  : 'text-gray-400'
-              }`}
-              onClick={() => setActiveTab('upcoming')}
-            >
-              Upcoming Matches
-            </button>
-          </div>
+        {/* Main = 60% on lg+, or full-width below */}
+        <div ref={contentRef} className="flex-none w-full lg:w-[60%] min-w-0">
+          <div className="px-2 md:px-0">
+            {/* Tabs */}
+            <div className="flex gap-6 border-b border-gray-700 px-4 mb-6">
+              <button
+                onClick={() => setActiveTab('live')}
+                className={`pb-2 font-semibold transition ${
+                  activeTab === 'live'
+                    ? 'text-white border-b-2 border-green-500'
+                    : 'text-gray-400'
+                }`}
+              >
+                Live Matches
+              </button>
+              <button
+                onClick={() => setActiveTab('upcoming')}
+                className={`pb-2 font-semibold transition ${
+                  activeTab === 'upcoming'
+                    ? 'text-white border-b-2 border-green-500'
+                    : 'text-gray-400'
+                }`}
+              >
+                Upcoming Matches
+              </button>
+            </div>
 
-          {activeTab === 'live' && <LiveMatches />}
-          {activeTab === 'upcoming' && <UpcomingMatches />}
+            {/* Content */}
+            {activeTab === 'live' ? <LiveMatches /> : <UpcomingMatches />}
+          </div>
         </div>
 
-        {/* Right Ad */}
-        <div
-          className="hidden lg:block w-[160px] shrink-0"
-          style={{ height: contentHeight }}
-        >
-          <div className="sticky top-10 h-full flex flex-col gap-4">
+        {/* Right ad = 20% on lg+, hidden below */}
+        <div className="hidden lg:block flex-none w-[20%]">
+          <div
+            className="sticky top-10 flex flex-col gap-4"
+            style={{ height: contentHeight }}
+          >
             <AdUnit />
             <AdUnit />
           </div>
