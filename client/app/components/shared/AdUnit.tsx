@@ -28,7 +28,7 @@ export default function AdUnit() {
   }, []);
 
   return (
-    <div className="w-full   text-center">
+    <div className="w-full bg-red-600 h-auto text-center">
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100px' }}
@@ -36,6 +36,7 @@ export default function AdUnit() {
         data-ad-slot="1460800568"
         data-ad-format="auto"
         data-full-width-responsive="true"
+        data-adtest="on"
       />
     </div>
   );

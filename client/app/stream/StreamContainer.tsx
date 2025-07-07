@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import { useUser } from '@/context/UserContext';
@@ -16,21 +16,8 @@ export default function StreamContainer() {
   const { user, loading: authLoading } = useUser();
   const [selected, setSelected] = useState<MatchData | null>(null);
 
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState(0);
 
-  // Measure main panel for sticky ads
-  useEffect(() => {
-    const update = () => {
-      if (contentRef.current) {
-        setContentHeight(contentRef.current.offsetHeight);
-      }
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    if (contentRef.current) ro.observe(contentRef.current);
-    return () => ro.disconnect();
-  }, []);
+
 
   const raw = params?.gmid;
   const gmid = raw ? Number(raw) : undefined;
@@ -116,15 +103,14 @@ export default function StreamContainer() {
   return (
     <div className="min-w-full flex  bg-black text-white py-10 px-2 lg:px-4 pt-[158px]">
       <div className="w-full flex flex-col gap-6">
-        <div className="flex">
+        <div className="flex max-h-[550px]">
           {' '}
-          <div className="hidden lg:block flex-none w-[20%]">
+          <div className="hidden lg:block flex-none w-[20%] max-h-[550px]">
             <div className="sticky top-10 h-full flex flex-col gap-4">
-              <AdUnit />
               <AdUnit />
             </div>
           </div>
-          <div className="relative w-[60%] bg-black rounded-lg overflow-hidden min-h-64">
+          <div className="relative w-[60%] bg-black rounded-lg overflow-hidden ">
             {selected?.stream ? (
               <LiveStream
                 src={selected.stream}
@@ -139,14 +125,9 @@ export default function StreamContainer() {
               </div>
             )}
           </div>
-          <div className="hidden lg:block min-h-64  flex-none w-[20%]">
-            <div className="sticky top-10 flex   flex-col gap-4">
-              <div className="min-h-32">
-                <AdUnit />
-              </div>
-              <div className="min-h-32">
-                <AdUnit />
-              </div>
+          <div className="hidden lg:block   flex-none w-[20%] max-h-[550px]">
+            <div className="sticky top-10 flex h-full  flex-col gap-4">
+              <AdUnit />
             </div>
           </div>
         </div>
