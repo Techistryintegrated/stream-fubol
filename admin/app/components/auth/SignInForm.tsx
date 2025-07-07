@@ -145,14 +145,7 @@ export default function SignInForm() {
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
-              <div className="flex justify-between text-sm text-gray-400">
-                <a
-                  href="/forgot-password"
-                  className="text-[white] text-[12px] font-medium hover:underline"
-                >
-                  Forgot password?
-                </a>
-              </div>
+             
 
               <button
                 type="submit"
@@ -162,12 +155,7 @@ export default function SignInForm() {
                 {isSubmitting ? 'Signing in…' : 'Sign In'}
               </button>
 
-              <p className="text-center text-gray-400 text-sm">
-                Don’t have an account?{' '}
-                <a href="/signup" className="text-green-500 hover:underline">
-                  Sign up
-                </a>
-              </p>
+              
             </Form>
           )}
         </Formik>
