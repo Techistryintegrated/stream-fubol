@@ -11,19 +11,25 @@ export async function POST(req: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { success: false, msg: 'Email and password are required' },
+        { success: false, msg: 'Email and password are required.' },
         { status: 400 }
       );
     }
 
-    console.log('Login attempt:', { email, password });
-
     await connectToDatabase();
 
     const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user) {
       return NextResponse.json(
-        { success: false, msg: 'Invalid credentials' },
+        { success: false, msg: 'No account found with this email.' },
+        { status: 404 }
+      );
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return NextResponse.json(
+        { success: false, msg: 'Password is incorrect.' },
         { status: 401 }
       );
     }
@@ -33,43 +39,28 @@ export async function POST(req: NextRequest) {
     });
 
     const response = NextResponse.json(
-      { success: true, msg: 'Logged in', token: token },
+      { success: true, msg: 'Logged in.', token: token },
       { status: 200 }
     );
 
-
     response.cookies.set('token', token, {
-      httpOnly: true, // JS in the browser can’t read it
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // or 'none' + secure for cross‐subdomain
+      sameSite: 'lax',
       domain:
         process.env.NODE_ENV === 'production'
           ? '.streamfutball.com'
-          : 'localhost', // dev: localhost
+          : 'localhost',
       path: '/',
-      maxAge: 24 * 60 * 60, // 24 hours
+      maxAge: 24 * 60 * 60,
     });
 
     return response;
   } catch (err) {
     console.error('Login error:', err);
     return NextResponse.json(
-      { success: false, msg: 'Server error' },
+      { success: false, msg: 'Server error. Please try again later.' },
       { status: 500 }
     );
   }
 }
-
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*', // or set specific origin
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Credentials': 'true',
-    },
-  });
-}
-
