@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useUser } from '../../../context/UserContext';
+import { isSafeRedirect } from '@/app/helper/isSafeRedirect';
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -56,7 +57,9 @@ export default function SignInForm() {
               if (!res.ok) throw new Error(json.msg || 'Login failed');
               toast.success('Logged in successfully');
               await refreshUser();
-              setTimeout(() => router.push(redirect), 800);
+              const safeRedirect = isSafeRedirect(redirect) ? redirect : '/';
+
+              setTimeout(() => router.push(safeRedirect), 800);
             } catch (err: unknown) {
               const errorMsg =
                 err instanceof Error
