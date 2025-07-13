@@ -80,12 +80,31 @@ const STATUS_DICT: Record<string, { desc: string; type: string }> = {
   WO: { desc: 'Walkover', type: 'Not Played' },
 };
 
-const normalize = (input: string): string =>
-  input
+
+
+const teamAliases: Record<string, string> = {
+  psg: 'paris saint germain',
+  'paris sg': 'paris saint-germain',
+  'man utd': 'manchester united',
+  'man united': 'manchester united',
+  bayern: 'bayern munich',
+  real: 'real madrid',
+  barça: 'barcelona',
+  'fc barcelona': 'barcelona',
+  inter: 'inter milan',
+  milan: 'ac milan',
+  // add more mappings here as you encounter new edge cases
+};
+
+const normalize = (input: string): string => {
+  const base = input
     .normalize('NFD')
     .replace(/[^\w\s]/g, '')
     .toLowerCase()
     .trim();
+
+  return teamAliases[base] ?? base;
+};
 
 const isTeamMatch = (a: string, b: string): boolean => {
   const na = normalize(a);
