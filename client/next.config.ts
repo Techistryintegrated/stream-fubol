@@ -31,6 +31,7 @@ const securityHeaders = [
 const nextConfig = {
   images: {
     domains: ['media.api-sports.io'],
+    unoptimized: true
   },
   async headers() {
     return [
