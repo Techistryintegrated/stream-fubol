@@ -16,9 +16,6 @@ export default function StreamContainer() {
   const { user, loading: authLoading } = useUser();
   const [selected, setSelected] = useState<MatchData | null>(null);
 
-
-
-
   const raw = params?.gmid;
   const gmid = raw ? Number(raw) : undefined;
   const isViewer = typeof gmid === 'number' && !isNaN(gmid);

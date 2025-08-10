@@ -25,7 +25,7 @@ export default function Matches() {
   }, []);
 
   return (
-    <div className="w-full overflow-x-hidden bg-black text-white py-10 px-2">
+    <div className="w-full bg-black text-white py-10 px-2">
       <div className="flex w-full items-start gap-4">
         {/* Left ad = 20% on lg+, hidden below */}
         <div className="hidden lg:block flex-none w-[20%]">
